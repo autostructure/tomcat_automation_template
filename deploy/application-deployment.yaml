@@ -1,0 +1,69 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: <application_name>
+  namespace: <org_name>
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: <application_name>
+        tier: frontend
+    spec:
+      containers:
+      - name: <application_name>
+        image: docker.fs.usda.gov/fia/<application_name>_development:$POM_VERSION
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /usr/local/tomcat/logs
+          name: <application_name>-logs
+          readOnly: false
+        - mountPath: /usr/local/tomcat/work
+          name: <application_name>-work
+          readOnly: false
+        env:
+        - name: DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: <application_name>-db-secret
+              key: username
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: <application_name>-db-secret
+              key: password
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: <application_name>-db-secret
+              key: connection-string
+      volumes:
+        - name: <application_name>-logs
+          emptyDir: {}
+        - name: <application_name>-work
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: <application_name>-svc
+  namespace: <org-name>
+spec:
+  # In a production setup, we recommend accessing Grafana through an external Loadbalancer
+  # or through a public IP.
+  # type: LoadBalancer
+  # You could also use NodePort to expose the service at a randomly-generated port
+  type: NodePort
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8080
+    nodePort: <assigned NodePort>
+  selector:
+    app: <application_name>
+    tier: frontend

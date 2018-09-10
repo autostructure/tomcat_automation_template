@@ -1,0 +1,1 @@
+powershell -Command "(New-Object Net.WebClient).DownloadFile('https://code.fs.usda.gov/raw/automation/control-repo/develop/.rubocop.yml?token=AAAAXI40hHvsBgL95Iq3rj7Ww1E543nWks5boAXIwA%3D%3D', '.rubocop.yml')"
